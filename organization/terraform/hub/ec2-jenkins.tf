@@ -48,9 +48,7 @@ resource "aws_security_group" "jenkins" {
     ]
   }
 
-  tags = "${concat(local.common_tags, list(
-  map("key","Name","value","jenkins")
-  ))}"
+  tags = "${merge(merge(local.common_tags, map("Name", "jenkins")))}"
 }
 
 ##
@@ -95,13 +93,8 @@ resource "aws_instance" "ec2_jenkins" {
     delete_on_termination = true
   }
 
-  volume_tags = "${concat(local.common_tags, list(
-  map("key","Name","value","jenkins")
-  ))}"
-
-  tags = "${concat(local.common_tags, list(
-  map("key","Name","value","jenkins")
-  ))}"
+  volume_tags = "${merge(merge(local.common_tags, map("Name", "jenkins")))}"
+  tags        = "${merge(merge(local.common_tags, map("Name", "jenkins")))}"
 
   depends_on = [
     "aws_ebs_volume.jenkins_files",
@@ -124,7 +117,5 @@ resource "aws_ebs_volume" "jenkins_files" {
   size              = 15
   type              = "gp2"
 
-  tags = "${concat(local.common_tags, list(
-  map("key","Name","value","jenkins-files")
-  ))}"
+  tags = "${merge(merge(local.common_tags, map("Name", "jenkins-files")))}"
 }

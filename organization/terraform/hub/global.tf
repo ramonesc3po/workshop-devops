@@ -9,8 +9,8 @@ variable "region" {}
 data "aws_availability_zones" "available" {}
 
 locals {
-  common_tags = "${list(
-  map("Terraform", "true"),
-  map("Organization", var.organization)
-  )}"
+  common_tags = {
+    Terraform    = "true"
+    Organization = "${var.organization}"
+  }
 }

@@ -7,9 +7,7 @@ resource "aws_vpc" "hub" {
 
   assign_generated_ipv6_cidr_block = false
 
-  tags = "${concat(local.common_tags, list(
-  map("key", "Name", "value", "hub")
-  ))}"
+  tags = "${merge(merge(local.common_tags, map("Name", "hub")))}"
 }
 
 resource "aws_subnet" "public_subnet" {
@@ -24,9 +22,7 @@ resource "aws_subnet" "public_subnet" {
     create_before_destroy = true
   }
 
-  tags = "${concat(local.common_tags, list(
-  map("key","Name","value","public-${element(data.aws_availability_zones.available.names, count.index)}")
-  ))}"
+  tags = "${merge(merge(local.common_tags, map("Name", "public-${element(data.aws_availability_zones.available.names, count.index)}")))}"
 }
 
 resource "aws_subnet" "private_subnet" {
@@ -41,36 +37,27 @@ resource "aws_subnet" "private_subnet" {
     create_before_destroy = true
   }
 
-  tags = "${concat(local.common_tags, list(
-  map("key","Name","value","private-${element(data.aws_availability_zones.available.names, count.index)}")
-  ))}"
+  tags = "${merge(merge(local.common_tags, map("Name", "private-${element(data.aws_availability_zones.available.names, count.index)}")))}"
 }
 
 resource "aws_route_table" "public" {
   count  = "1"
   vpc_id = "${aws_vpc.hub.id}"
 
-  tags = "${concat(local.common_tags, list(
-  map("key","Name","value","public")
-  ))}"
+  tags = "${merge(merge(local.common_tags, map("Name", "public")))}"
 }
 
 resource "aws_route_table" "private" {
   count  = "1"
   vpc_id = "${aws_vpc.hub.id}"
-
-  tags = "${concat(local.common_tags, list(
-  map("key","Name","value","private")
-  ))}"
+  tags   = "${merge(merge(local.common_tags, map("Name", "private")))}"
 }
 
 resource "aws_internet_gateway" "ig_public" {
   count  = "1"
   vpc_id = "${aws_vpc.hub.id}"
 
-  tags = "${concat(local.common_tags, list(
-  map("key","Name","value","public")
-  ))}"
+  tags = "${merge(merge(local.common_tags, map("Name", "public")))}"
 
   depends_on = [
     "aws_vpc.hub",
@@ -117,19 +104,13 @@ resource "aws_route" "public_ig" {
 
 resource "aws_eip" "nat" {
   count = 1
-
-  tags = "${concat(local.common_tags, list(
-  map("key","Name","value","public")
-  ))}"
+  tags  = "${merge(merge(local.common_tags, map("Name", "public")))}"
 }
 
 resource "aws_nat_gateway" "public_nat" {
-  count = "1"
-
+  count         = "1"
   allocation_id = "${aws_eip.nat.id}"
   subnet_id     = "${element(aws_subnet.public_subnet.*.id, count.index)}"
 
-  tags = "${concat(local.common_tags, list(
-  map("Name", "nat")
-  ))}"
+  tags = "${merge(merge(local.common_tags, map("Name", "nat")))}"
 }

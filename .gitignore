@@ -1,4 +1,5 @@
 terraform.tfstate
+terraform.tfstate.backup
 terraform.tfplan
 ./*.tfstate
 .terraform/
@@ -6,3 +7,5 @@ terraform.tfplan
 .*.swp
 .idea
 *.plan
+*.retry
+*.aws

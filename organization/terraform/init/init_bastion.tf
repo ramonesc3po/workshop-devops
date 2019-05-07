@@ -80,11 +80,11 @@ resource "aws_instance" "init_bastion" {
     Name         = "init-bastion"
     Organization = "lab4ever"
   }
-/*
+
   provisioner "remote-exec" {
     connection {
-      host = "${aws_instance.init_bastion.public_ip}"
-      user = "ubuntu"
+      host        = "${aws_instance.init_bastion.public_ip}"
+      user        = "ubuntu"
       private_key = "${tls_private_key.init_bastion.private_key_pem}"
     }
 
@@ -95,9 +95,9 @@ resource "aws_instance" "init_bastion" {
       "terraform plan -var-file=conf/us-east-1-hub.tfvars -var-file=conf/global.tfvars -out=.terraform-hub.plan hub/",
     ]
   }
-*/
+
   provisioner "local-exec" {
-    command = "echo ${tls_private_key.init_bastion.private_key_pem} > /tmp/init-bastion.pem"
+    command = "echo ${tls_private_key.init_bastion.private_key_pem} >> /tmp/init-bastion.pem"
   }
 }
 

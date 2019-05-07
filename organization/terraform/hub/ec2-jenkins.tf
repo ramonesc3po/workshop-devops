@@ -68,6 +68,10 @@ resource "aws_key_pair" "ec2_jenkins" {
   public_key      = "${data.tls_public_key.ec2_jenkins.public_key_openssh}"
 }
 
+data "aws_iam_role" "ec2_jenkins" {
+  name = "role-instance-jenkins"
+}
+
 ##
 # Create Jenkins instance
 ##
@@ -76,6 +80,8 @@ resource "aws_instance" "ec2_jenkins" {
   ami           = "${data.aws_ami.jenkins.id}"
   instance_type = "${var.ec2_jenkins_type}"
   key_name      = "${aws_key_pair.ec2_jenkins.key_name}"
+
+  iam_instance_profile = "${data.aws_iam_role.ec2_jenkins.id}"
 
   user_data = <<-EOF
   #!/bin/bash
@@ -121,7 +127,8 @@ resource "aws_ebs_volume" "jenkins_files" {
 }
 
 resource "random_string" "execute_if_change" {
-  length  = 10
+  length = 10
+
   keepers = {
     execute_if_change = "${aws_instance.ec2_jenkins.id}"
   }

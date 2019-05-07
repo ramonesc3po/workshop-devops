@@ -5,26 +5,22 @@
 */
 
 pipeline {
-  agent any
-
-  environment {
-   TERRAFORM = 'docker run hashicorp/terraform:light'
-  }
-
-  stages {
-    stage('build') {
-      steps {
-        checkout scm
-        sh 'docker pull hashicorp/terraform:light'
-        echo build
-        sh '${TERRAFORM} init'
-      }
+    agent {
+        docker {
+            image 'hashicorp/terraform:latest'
+            args '--entrypoint=""'
+        }
     }
 
-    stage('plan') {
-      steps {
-        echo plan
-      }
+
+    stages {
+        stage('init') {
+            steps {
+                checkout scm
+                ls -la
+                cd organization/terraform/hub
+                terraform init
+            }
+        }
     }
-  }
 }

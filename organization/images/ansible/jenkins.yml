@@ -1,0 +1,25 @@
+---
+- name: provision jenkins
+  hosts: all
+  become: yes
+
+  pre_tasks:
+    - name: update cache
+      shell: apt-get update
+    - name: install the required package
+      apt:
+        name: ['ansible','python3-pip']
+        state: present
+        update_cache: yes
+
+  vars:
+    jenkins_plugin_updates_expiration: 0
+    jenkins_plugin_timeout: 300
+    jenkins_plugins: [role-strategy, pipeline-aws, blueocean, ssh-agent, build-pipeline-plugin, custom-tools-plugin, github]
+    jenkins_global_vars:
+      - key: TESTE
+        value: teste
+
+  roles:
+    - role: jenkins2
+      become: yes

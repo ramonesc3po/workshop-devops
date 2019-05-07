@@ -1,0 +1,21 @@
+---
+- hosts: jenkins
+  become: yes
+
+  pre_tasks:
+    - name: install the required package
+      apt:
+        name: ['ansible','python3-pip']
+        state: present
+        update_cache: yes
+
+  vars:
+    jenkins_plugin_updates_expiration: 0
+    jenkins_plugin_timeout: 300
+    jenkins_plugins: [role-strategy, pipeline-aws, blueocean, ssh-agent, build-pipeline-plugin, custom-tools-plugin, github]
+    jenkins_global_vars:
+      - key: TESTE
+        value: teste
+
+  roles:
+    - { role: /home/ramon/projects/ansible/role-jenkins2, become: yes }

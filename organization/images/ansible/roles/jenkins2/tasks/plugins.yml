@@ -1,0 +1,81 @@
+---
+# jenkins_plugin module doesn't support password files.
+- name: Get Jenkins admin password from file.
+  slurp:
+    src: "{{ jenkins_admin_password_file }}"
+  register: adminpasswordfile
+  no_log: true
+  when: jenkins_admin_password_file != ""
+  tags: install_plugins
+
+- name: Set Jenkins admin password fact.
+  set_fact:
+    jenkins_admin_password: "{{ adminpasswordfile['stdout'] | default(jenkins_admin_password) }}"
+  no_log: true
+  tags: install_plugins
+
+# Update Jenkins so that plugin updates don't fail.
+- name: Create update directory
+  file:
+    path: "{{ jenkins_home }}/updates"
+    state: directory
+    owner: jenkins
+    group: jenkins
+  tags: install_plugins
+
+- name: Download current plugin updates from Jenkins update site
+  get_url:
+    url: http://updates.jenkins-ci.org/update-center.json
+    dest: "{{ jenkins_home }}/updates/default.json"
+    owner: jenkins
+    group: jenkins
+    mode: 0440
+  changed_when: false
+  tags: install_plugins
+
+- name: Remove first and last line from json file
+  replace:
+    path: "{{ jenkins_home }}/updates/default.json"
+    regexp: "1d;$d"
+  tags: install_plugins
+
+- name: Install Jenkins plugins using password.
+  jenkins_plugin:
+    name: "{{ item }}"
+    jenkins_home: "{{ jenkins_home }}"
+    url_username: "{{ jenkins_admin_username }}"
+    url_password: "{{ jenkins_admin_password }}"
+    state: "{{ jenkins_plugins_state }}"
+    timeout: "{{ jenkins_plugin_timeout }}"
+    updates_expiration: "{{ jenkins_plugin_updates_expiration }}"
+    url: "http://{{ jenkins_hostname }}:{{ jenkins_http_port }}{{ jenkins_url_prefix }}"
+    use_proxy: "{{ jenkins_plugins_use_proxy }}"
+    with_dependencies: "{{ jenkins_plugins_install_dependencies }}"
+  loop: "{{ jenkins_plugins }}"
+  when: jenkins_admin_password != ""
+  ignore_errors: yes
+  register: jenkins_install_plugins
+  tags: install_plugins
+
+- name: restart jenkins before install plugins
+  service:
+    name: jenkins
+    state: restarted
+  when: jenkins_install_plugins.changed
+  tags: install_plugins
+
+- name: Wait for Jenkins to start up before install plugins
+  command: >
+    curl -D - --silent --max-time 5 http://{{ jenkins_hostname }}:{{ jenkins_http_port }}{{ jenkins_url_prefix }}/cli/
+  args:
+    warn: false
+  register: result
+  until: >
+    (result.stdout.find("403 Forbidden") != -1)
+    or (result.stdout.find("200 OK") != -1)
+    and (result.stdout.find("Please wait while") == -1)
+  retries: "{{ jenkins_connection_retries }}"
+  delay: "{{ jenkins_connection_delay }}"
+  changed_when: false
+  check_mode: false
+  tags: install_plugins

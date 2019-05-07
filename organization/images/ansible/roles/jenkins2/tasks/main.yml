@@ -1,0 +1,90 @@
+---
+- name: Add vars.
+  include_vars: ubuntu.yml
+
+- name: If jenkins_init_default_file not defined.
+  set_fact:
+    jenkins_init_default_file: "{{ __jenkins_init_default_file }}"
+  when: jenkins_init_default_file is not defined and jenkins_init_default_file != ''
+
+- name: If jenkins_pkg_url not defined.
+  set_fact:
+    jenkins_pkg_url: "{{ __jenkins_pkg_url }}"
+  when: jenkins_pkg_url is not defined and jenkins_pkg_url != ''
+
+- name: If jenkins_version not defined.
+  set_fact:
+    jenkins_version: "{{ __jenkins_version }}"
+  when: jenkins_version is not defined and jenkins_version != ''
+
+- name: If jenkins_repo_url not defined.
+  set_fact:
+    jenkins_repo_url: "{{ __jenkins_repo_url }}"
+  when: jenkins_repo_url is not defined and jenkins_repo_url != ''
+
+- name: If jenkins_repo_key_url not defined.
+  set_fact:
+    jenkins_repo_key_url: "{{ __jenkins_repo_key_url }}"
+  when: jenkins_repo_key_url is not defined and jenkins_repo_key_url != ''
+
+- include_tasks: packages.yml
+  tags: instal_packages
+  when: ansible_distribution == 'Ubuntu'
+
+- include_tasks: setup-Debian.yml
+  tags: setup-Debian
+  when: ansible_distribution == 'Ubuntu'
+
+- include_tasks: settings.yml
+  tags: settings
+
+- name: Ensure Jenkins is started and runs on startup.
+  service:
+    name: jenkins
+    state: started
+    enabled: yes
+
+- name: Wait for Jenkins to start up before proceeding.
+  command: >
+    curl -D - --silent --max-time 5 http://{{ jenkins_hostname }}:{{ jenkins_http_port }}{{ jenkins_url_prefix }}/cli/
+  args:
+    warn: false
+  register: result
+  until: >
+    (result.stdout.find("403 Forbidden") != -1)
+    or (result.stdout.find("200 OK") != -1)
+    and (result.stdout.find("Please wait while") == -1)
+  retries: "{{ jenkins_connection_retries }}"
+  delay: "{{ jenkins_connection_delay }}"
+  changed_when: false
+  check_mode: false
+
+- name: Get the jenkins-cli jarfile from the Jenkins server.
+  get_url:
+    url: "http://{{ jenkins_hostname }}:{{ jenkins_http_port }}{{ jenkins_url_prefix }}/jnlpJars/jenkins-cli.jar"
+    dest: "{{ jenkins_jar_location }}"
+  register: jarfile_get
+  until: "'OK' in jarfile_get.msg or '304' in jarfile_get.msg or 'file already exists' in jarfile_get.msg"
+  retries: 5
+  delay: 10
+  check_mode: false
+
+- name: Remove Jenkins security init scripts after first startup.
+  file:
+    path: "{{ jenkins_home }}/init.groovy.d/basic-security.groovy"
+    state: absent
+
+- include_tasks: plugins.yml
+  tags: install_plugins
+
+- include_tasks: scripts.yml
+  tags: add_user, add_global_env, list_plugins
+
+- name: Remove Jenkins security init scripts after first startup.
+  file:
+    path: "{{ jenkins_home }}/provision/{{ item }}"
+    state: absent
+  tags: add_user, add_global_env
+  loop:
+    - set_global_env_vars.groovy
+    - add_user.groovy

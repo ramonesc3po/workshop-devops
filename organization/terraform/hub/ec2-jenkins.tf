@@ -83,7 +83,7 @@ resource "aws_instance" "ec2_jenkins" {
   apt-get install ansible awscli -y
   EOF
 
-  subnet_id = "${element(aws_subnet.private_subnet.*.id, 0)}"
+  subnet_id = "${element(aws_subnet.public_subnet.*.id, 0)}"
 
   vpc_security_group_ids = ["${aws_security_group.jenkins.id}"]
 
@@ -118,4 +118,8 @@ resource "aws_ebs_volume" "jenkins_files" {
   type              = "gp2"
 
   tags = "${merge(merge(local.common_tags, map("Name", "jenkins-files")))}"
+}
+
+output "jenkins_public_ip" {
+  value = "${aws_instance.ec2_jenkins.public_ip}"
 }

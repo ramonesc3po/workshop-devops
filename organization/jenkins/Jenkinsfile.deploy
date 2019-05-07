@@ -17,7 +17,7 @@ pipeline {
         checkout scm
         sh 'docker pull hashicorp/terraform:light'
         echo build
-        ${TERRAFORM} init
+        sh '${TERRAFORM} init'
       }
     }
 

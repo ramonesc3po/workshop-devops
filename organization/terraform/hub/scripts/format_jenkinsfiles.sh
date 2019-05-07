@@ -1,18 +1,25 @@
 #!/bin/bash
 
-sudo su
+sudo tune2fs -l /dev/xvdf | grep 'jenkinsfiles'
+TUNE2FS=$?
 
-if tune2fs -l /dev/xvdf | grep 'jenkinsfiles' 2> /dev/null; then
-    mkfs.ext4 /dev/xvdf -L jenkinsfiles <<< "y" && \
-    systemctl stop jenkins && \
+if [ $TUNE2FS -eq 0 ] ; then
+    sudo systemctl stop jenkins && \
     echo "LABEL=jenkinsfiles    /var/lib/jenkins   ext4 defaults,discard    0 0" && \
-    systemctl start jenkins
+    sudo mount -a
+    sudo systemctl start jenkins
 else
-    mkfs.ext4 /dev/xvdf -L jenkinsfiles <<< "y" && \
-    systemctl stop jenkins && \
-    mkdir /opt/jenkins_tmp && mv -f /var/lib/jenkins/* /var/lib/jenkins/.* /opt/jenkins_tmp && \
-    mount /dev/xvdf /var/lib/jenkins && chown jenkins:jenkins /var/lib/jenkins -R && \
-    shopt -s dotglob && mv -f /opt/jenkins_tmp/* /var/lib/jenkins && rm -rf /opt/jenkins_tmp && \
-    echo "LABEL=jenkinsfiles    /var/lib/jenkins   ext4 defaults,discard    0 0"
-    systemctl start jenkins
+    sudo mkfs.ext4 /dev/xvdf -L jenkinsfiles <<< "y" && \
+    sudo systemctl stop jenkins && \
+    shopt -s dotglob && sleep 30 && \
+    sudo mkdir /opt/jenkins_tmp && sudo mv -f /var/lib/jenkins/* /opt/jenkins_tmp && \
+    sleep 30 && \
+    sudo mount /dev/xvdf /var/lib/jenkins && sudo chown jenkins:jenkins /var/lib/jenkins -R && \
+    sleep 30 && \
+    sudo mv -f /opt/jenkins_tmp/* /var/lib/jenkins && sudo rm -rf /opt/jenkins_tmp && \
+    sudo echo "LABEL=jenkinsfiles    /var/lib/jenkins   ext4 defaults,discard    0 0" >> /etc/fstab && \
+    sleep 30 && \
+    sudo systemctl start jenkins
 fi
+
+exit

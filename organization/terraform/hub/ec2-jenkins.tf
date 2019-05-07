@@ -111,6 +111,13 @@ resource "aws_volume_attachment" "attach_jenkins_files" {
     "aws_ebs_volume.jenkins_files",
   ]
 
+  provisioner "file" {
+    connection {
+
+    }
+    destination = ""
+  }
+
   provisioner "remote-exec" {
     connection {
       host        = "${aws_instance.ec2_jenkins.public_ip}"

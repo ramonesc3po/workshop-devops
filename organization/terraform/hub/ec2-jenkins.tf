@@ -81,17 +81,6 @@ resource "aws_instance" "ec2_jenkins" {
   #!/bin/bash
   apt-get update
   apt-get install ansible awscli -y
-  if tune2fs -l /dev/xvdf | grep 'jenkinsfiles' 2> /dev/null; then
-    echo "jenkinsfiles already"
-  else
-    y | mkfs.ext4 /dev/xvdf -L jenkinsfiles
-    systemctl stop jenkins && \
-    mkdir /opt/jenkins_tmp && mv -f /var/lib/jenkins/* /var/lib/jenkins/.* /opt/jenkins_tmp && \
-    mount /dev/xvdf /var/lib/jenkins && chown jenkins:jenkins /var/lib/jenkins -R && \
-    shopt -s dotglob && mv -f /opt/jenkins_tmp/* /var/lib/jenkins && rm -rf /opt/jenkins_tmp && \
-    echo "LABEL=jenkinsfiles    /var/lib/jenkins   ext4 defaults,discard    0 0"
-    systemctl start jenkins
-  fi
   EOF
 
   subnet_id = "${element(aws_subnet.public_subnet.*.id, 0)}"
@@ -110,6 +99,16 @@ resource "aws_instance" "ec2_jenkins" {
   depends_on = [
     "aws_ebs_volume.jenkins_files",
   ]
+
+  provisioner "remote-exec" {
+    connection {
+      host        = "${aws_instance.ec2_jenkins.public_ip}"
+      private_key = "${tls_private_key.ec2_jenkins.private_key_pem}"
+      user        = "ubuntu"
+    }
+
+    script = "scripts/format_jenkinsfiles.sh"
+  }
 }
 
 resource "aws_volume_attachment" "attach_jenkins_files" {

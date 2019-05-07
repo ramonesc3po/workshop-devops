@@ -3,7 +3,10 @@
 sudo su
 
 if tune2fs -l /dev/xvdf | grep 'jenkinsfiles' 2> /dev/null; then
-    echo "jenkinsfiles already"
+    mkfs.ext4 /dev/xvdf -L jenkinsfiles <<< "y" && \
+    systemctl stop jenkins && \
+    echo "LABEL=jenkinsfiles    /var/lib/jenkins   ext4 defaults,discard    0 0" && \
+    systemctl start jenkins
 else
     mkfs.ext4 /dev/xvdf -L jenkinsfiles <<< "y" && \
     systemctl stop jenkins && \

@@ -1,7 +1,7 @@
 #!/usr/local/env groovy
 
 /*
-  Provision terraform webapp
+  Provision terraform hub
 */
 
 pipeline {
@@ -16,6 +16,7 @@ pipeline {
         stage('init') {
             steps {
                 checkout scm
+
                 sh """
                 cd organization/terraform/hub
                 terraform init
@@ -38,7 +39,7 @@ pipeline {
                 }
                 sh """
                 cd organization/terraform/hub
-                terraform plan -var-file=../conf/us-east-1-hub.tfvars -var-file=../conf/global.tfvars -out=.terraform-hub.plan
+                terraform apply .terraform-hub.plan
                 """
             }
         }

@@ -1,10 +1,10 @@
 variable "cidr_blocks" {}
 
-variable "tier" {}
-
 variable "aws_account_id" {}
 
 variable "organization" {}
+
+variable "region" {}
 
 data "aws_availability_zones" "available" {}
 

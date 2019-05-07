@@ -20,7 +20,7 @@ data "aws_ami" "jenkins" {
 }
 
 variable "ec2_jenkins_type" {
-  type = "map"
+  type = "string"
 }
 
 resource "aws_security_group" "jenkins" {
@@ -34,7 +34,7 @@ resource "aws_security_group" "jenkins" {
     protocol  = "-1"
 
     cidr_blocks = [
-      "${aws_subnet.public_subnet.*.cidr_block}"
+      "${aws_subnet.public_subnet.*.cidr_block}",
     ]
   }
 
@@ -66,7 +66,7 @@ resource "tls_private_key" "ec2_jenkins" {
 }
 
 resource "aws_key_pair" "ec2_jenkins" {
-  key_name_prefix = "jenkins-${var.tier}"
+  key_name_prefix = "jenkins"
   public_key      = "${data.tls_public_key.ec2_jenkins.public_key_openssh}"
 }
 
@@ -76,7 +76,7 @@ resource "aws_key_pair" "ec2_jenkins" {
 resource "aws_instance" "ec2_jenkins" {
   count         = 1
   ami           = "${data.aws_ami.jenkins.id}"
-  instance_type = "t2.small"
+  instance_type = "${var.ec2_jenkins_type}"
   key_name      = "${aws_key_pair.ec2_jenkins.key_name}"
 
   user_data = <<-EOF
@@ -103,23 +103,21 @@ resource "aws_instance" "ec2_jenkins" {
   map("key","Name","value","jenkins")
   ))}"
 
-  ebs_block_device {
-    device_name = "/dev/sdf"
-    volume_id   = "${aws_ebs_volume.jenkins_files.id}"
-  }
-
   depends_on = [
     "aws_ebs_volume.jenkins_files",
   ]
 }
 
-/*
-resource "aws_volume_attachment" "" {
+resource "aws_volume_attachment" "attach_jenkins_files" {
   device_name = "/dev/sdf"
   instance_id = "${aws_instance.ec2_jenkins.id}"
   volume_id   = "${aws_ebs_volume.jenkins_files.id}"
+
+  depends_on = [
+    "aws_instance.ec2_jenkins",
+    "aws_ebs_volume.jenkins_files",
+  ]
 }
-*/
 
 resource "aws_ebs_volume" "jenkins_files" {
   availability_zone = "${element(aws_subnet.private_subnet.*.availability_zone, 0)}"

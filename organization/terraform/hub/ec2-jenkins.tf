@@ -133,8 +133,12 @@ resource "null_resource" "jenkins" {
 
   depends_on = [
     "aws_volume_attachment.attach_jenkins_files",
-    "aws_instance.ec2_jenkins"
+    "aws_instance.ec2_jenkins",
   ]
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 output "jenkins_ssh_key" {

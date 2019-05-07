@@ -1,5 +1,7 @@
 #!/bin/bash
 
+sleep 60
+
 sudo tune2fs -l /dev/xvdf | grep 'jenkinsfiles'
 TUNE2FS=$?
 

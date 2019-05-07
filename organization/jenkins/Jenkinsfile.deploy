@@ -17,9 +17,11 @@ pipeline {
         stage('init') {
             steps {
                 checkout scm
+                sh """
                 ls -la
                 cd organization/terraform/hub
                 terraform init
+                """
             }
         }
     }

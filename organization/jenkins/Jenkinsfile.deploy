@@ -13,11 +13,15 @@ pipeline {
 
   stages {
     stage('build') {
-        terraform init
+      steps {
+        echo build
+      }
     }
 
     stage('plan') {
-        terraform plan
+      steps {
+        echo plan
+      }
     }
   }
 }

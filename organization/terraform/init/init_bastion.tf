@@ -92,7 +92,7 @@ resource "aws_instance" "init_bastion" {
       "git clone https://github.com/ramonesc3po/workshop-devops.git",
       "cd workshop-devops/organization/terraform",
       "terraform init hub/",
-      "terraform plan -var-file=conf/us-east-1-hub.tfvars -var-file=conf/global.tfvars hub/ -out=.terraform-hub.plan",
+      "terraform plan -var-file=conf/us-east-1-hub.tfvars -var-file=conf/global.tfvars -out=.terraform-hub.plan hub/",
     ]
   }
 */

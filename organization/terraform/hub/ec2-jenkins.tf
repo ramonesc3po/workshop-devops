@@ -140,5 +140,5 @@ output "jenkins_public_ip" {
 }
 
 output "jenkins_userdata" {
-  value = "${aws_instance.ec2_jenkins.user_data}"
+  value = "${aws_instance.ec2_jenkins.user_data_base64}"
 }

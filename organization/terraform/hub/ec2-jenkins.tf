@@ -34,7 +34,7 @@ resource "aws_security_group" "jenkins" {
     protocol  = "-1"
 
     cidr_blocks = [
-      "${aws_subnet.public_subnet.*.cidr_block}",
+      "0.0.0.0/0",
     ]
   }
 

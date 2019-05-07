@@ -1,9 +1,11 @@
 #!/bin/bash
 
+sudo su
+
 if tune2fs -l /dev/xvdf | grep 'jenkinsfiles' 2> /dev/null; then
     echo "jenkinsfiles already"
 else
-    y | mkfs.ext4 /dev/xvdf -L jenkinsfiles
+    mkfs.ext4 /dev/xvdf -L jenkinsfiles <<< "y" && \
     systemctl stop jenkins && \
     mkdir /opt/jenkins_tmp && mv -f /var/lib/jenkins/* /var/lib/jenkins/.* /opt/jenkins_tmp && \
     mount /dev/xvdf /var/lib/jenkins && chown jenkins:jenkins /var/lib/jenkins -R && \

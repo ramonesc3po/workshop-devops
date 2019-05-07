@@ -99,16 +99,6 @@ resource "aws_instance" "ec2_jenkins" {
   depends_on = [
     "aws_ebs_volume.jenkins_files",
   ]
-
-  provisioner "remote-exec" {
-    connection {
-      host        = "${aws_instance.ec2_jenkins.public_ip}"
-      private_key = "${tls_private_key.ec2_jenkins.private_key_pem}"
-      user        = "ubuntu"
-    }
-
-    script = "scripts/format_jenkinsfiles.sh"
-  }
 }
 
 resource "aws_volume_attachment" "attach_jenkins_files" {
@@ -128,6 +118,22 @@ resource "aws_ebs_volume" "jenkins_files" {
   type              = "gp2"
 
   tags = "${merge(merge(local.common_tags, map("Name", "jenkins-files")))}"
+}
+
+resource "null_resource" "jenkins" {
+  provisioner "remote-exec" {
+    connection {
+      host        = "${aws_instance.ec2_jenkins.public_ip}"
+      private_key = "${tls_private_key.ec2_jenkins.private_key_pem}"
+      user        = "ubuntu"
+    }
+
+    script = "scripts/format_jenkinsfiles.sh"
+  }
+
+  depends_on = [
+    "aws_volume_attachment.attach_jenkins_files",
+  ]
 }
 
 output "jenkins_ssh_key" {

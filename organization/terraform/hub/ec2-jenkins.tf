@@ -120,7 +120,12 @@ resource "aws_ebs_volume" "jenkins_files" {
   tags = "${merge(merge(local.common_tags, map("Name", "jenkins-files")))}"
 }
 
-resource "null_resource" "jenkins" {
+resource "random_string" "execute_if_change" {
+  length  = 10
+  keepers = {
+    execute_if_change = "${aws_instance.ec2_jenkins.id}"
+  }
+
   provisioner "remote-exec" {
     connection {
       host        = "${aws_instance.ec2_jenkins.public_ip}"
@@ -135,10 +140,6 @@ resource "null_resource" "jenkins" {
     "aws_volume_attachment.attach_jenkins_files",
     "aws_instance.ec2_jenkins",
   ]
-
-  lifecycle {
-    create_before_destroy = true
-  }
 }
 
 output "jenkins_ssh_key" {

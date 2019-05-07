@@ -7,7 +7,7 @@ TUNE2FS=$?
 
 if [ $TUNE2FS -eq 0 ] ; then
     sudo systemctl stop jenkins && \
-    echo "LABEL=jenkinsfiles    /var/lib/jenkins   ext4 defaults,discard    0 0" && \
+    sudo sh -c 'echo "LABEL=jenkinsfiles    /var/lib/jenkins   ext4 defaults,discard    0 0" >> /etc/fstab' && \
     sudo mount -a
     sudo systemctl start jenkins
 else
@@ -19,7 +19,7 @@ else
     sudo mount /dev/xvdf /var/lib/jenkins && sudo chown jenkins:jenkins /var/lib/jenkins -R && \
     sleep 30 && \
     sudo mv -f /opt/jenkins_tmp/* /var/lib/jenkins && sudo rm -rf /opt/jenkins_tmp && \
-    sudo echo "LABEL=jenkinsfiles    /var/lib/jenkins   ext4 defaults,discard    0 0" >> /etc/fstab && \
+    sudo sh -c 'echo "LABEL=jenkinsfiles    /var/lib/jenkins   ext4 defaults,discard    0 0" >> /etc/fstab' && \
     sleep 30 && \
     sudo systemctl start jenkins
 fi

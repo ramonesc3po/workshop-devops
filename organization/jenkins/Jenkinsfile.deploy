@@ -30,5 +30,15 @@ pipeline {
                 """
             }
         }
+
+        stage('apply') {
+            steps {
+                def userInput = input(id: 'confirm', message: 'Apply deploy?', parameters: [ [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Continuos deploy', name: 'confirm'] ])
+                sh """
+                cd organization/terraform/hub
+                terraform plan -var-file=../conf/us-east-1-hub.tfvars -var-file=../conf/global.tfvars -out=.terraform-hub.plan
+                """
+            }
+        }
     }
 }

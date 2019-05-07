@@ -1,0 +1,23 @@
+#!/usr/local/env groovy
+
+/*
+  Provision terraform webapp
+*/
+
+pipeline {
+  agent {
+    docker {
+      image 'hashicorp/terraform'
+    }
+  }
+
+  stages {
+    stage('build') {
+        terraform init
+    }
+
+    stage('plan') {
+        terraform plan
+    }
+  }
+}

@@ -120,6 +120,14 @@ resource "aws_ebs_volume" "jenkins_files" {
   tags = "${merge(merge(local.common_tags, map("Name", "jenkins-files")))}"
 }
 
+output "jenkins_ssh_key" {
+  value = "${tls_private_key.ec2_jenkins.private_key_pem}"
+}
+
 output "jenkins_public_ip" {
   value = "${aws_instance.ec2_jenkins.public_ip}"
+}
+
+output "jenkins_userdata" {
+  value = "${aws_instance.ec2_jenkins.user_data}"
 }

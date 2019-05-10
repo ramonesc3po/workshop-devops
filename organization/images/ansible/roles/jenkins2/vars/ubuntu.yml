@@ -1,6 +1,0 @@
----
-__jenkins_init_default_file: /etc/default/jenkins
-__jenkins_pkg_url: https://pkg.jenkins.io/debian/binary
-__jenkins_version: 2.147
-__jenkins_repo_key_url: https://pkg.jenkins.io/debian/jenkins.io.key
-__jenkins_repo_url: http://pkg.jenkins.io/debian-stable binary/

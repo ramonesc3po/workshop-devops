@@ -1,3 +1,0 @@
-[jenkins]
-100.27.29.123 ansible_ssh_user=ubuntu ansible_ssh_private_key_file=/home/ramon/.ssh/nb-test-ramon.pem ansible_python_interpreter=python3
-

@@ -1,7 +1,0 @@
----
-- name: Install Packages
-  apt:
-    name: ['htop','openjdk-8-jdk','awscli','jq','unzip']
-    state: latest
-    update_cache: yes
-    autoclean: yes
